@@ -1,0 +1,43 @@
+name: Generate Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: 'Enter your animation prompt'
+        required: true
+        default: 'a stick figure sitting at a desk, looking tired, then standing up with energy'
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate Video
+        env:
+          ANIMATION_PROMPT: ${{ github.event.inputs.prompt }}
+        run: |
+          node scripts/generate.js "$ANIMATION_PROMPT"
+
+      - name: Upload Output Video
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-animation
+          path: |
+            .stix/output/*.mp4
+            .stix/output/*.gif
+            output/*.mp4
+            output/*.gif
